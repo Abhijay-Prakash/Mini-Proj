@@ -1,15 +1,18 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const pool = new Pool({
+const sequelize = new Sequelize(process.env.PG_DATABASE, process.env.PG_USER, process.env.PG_PASSWORD, {
     host: process.env.PG_HOST,
-    user: process.env.PG_USER,
-    password: process.env.PG_PASSWORD,
-    database: process.env.PG_DATABASE,
+    dialect: 'postgres',
     port: process.env.PG_PORT,
-    ssl: { rejectUnauthorized: false },
+    logging: false, // Disable logging (optional)
+    dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false,
+        },
+    },
 });
 
-export const db = drizzle(pool);
-
-export default db;
+export default sequelize;

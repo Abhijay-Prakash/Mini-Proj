@@ -1,13 +1,16 @@
 import jwt from "jsonwebtoken";
-import User from "../models/user.model.js";
+import { User } from "../models/postgresql/userSchema.js";
 
-const protectRoute = async (req, res, next) => {
+export const protectRoute = async (req, res, next) => {
     try {
+
         const token = req.cookies.jwt;
 
+
         if (!token) {
-            return res.status(401).json({ error: "Unauthorized - No Token Pr    ovided" });
+            return res.status(401).json({ error: "Unauthorized - No Token Provided" });
         }
+
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
@@ -15,14 +18,19 @@ const protectRoute = async (req, res, next) => {
             return res.status(401).json({ error: "Unauthorized - Invalid Token" });
         }
 
-        const user = await User.findById(decoded.userId).select("-password");
+        const user = await User.findOne({
+            where: { userId: decoded.userId },
+            attributes: { exclude: ["password"] },
+        });
 
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
 
+
         req.user = user;
 
+        // this allows the program to move its control to the next middleware/function if present
         next();
     } catch (error) {
         console.log("Error in protectRoute middleware: ", error.message);
@@ -30,4 +38,3 @@ const protectRoute = async (req, res, next) => {
     }
 };
 
-export default protectRoute;
