@@ -1,4 +1,6 @@
 import bcrypt from "bcryptjs";
+import { Op } from "sequelize";
+
 import generateTokenAndSetCookie from "../utils/generateToken.js";
 import image from "../models/mongodb/imageModel.js";
 
@@ -7,45 +9,56 @@ import { User } from "../models/postgresql/userSchema.js";
 
 export const signup = async (req, res) => {
     try {
-        const { fullName, username, password, confirmPassword, gender } = req.body;
+        const { fullName, username, email, password, confirmPassword, gender } = req.body;
 
-        // Password match check
+
         if (password !== confirmPassword) {
             return res.status(400).json({ error: "Passwords don't match" });
         }
 
-        // Check if the username already exists
-        const existingUser = await User.findOne({ where: { username } });
+
+        const existingUser = await User.findOne({
+            where: {
+                [Op.or]: [{ username }, { email }],
+            },
+        });
         if (existingUser) {
-            return res.status(400).json({ error: "Username already exists" });
+            return res.status(400).json({
+                error: existingUser.username === username
+                    ? "Username already exists"
+                    : "Email already exists",
+            });
         }
 
-        // Hash password
+
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Profile picture URL based on gender
+
         const boyProfilePic = `https://avatar.iran.liara.run/public/boy?username=${username}`;
         const girlProfilePic = `https://avatar.iran.liara.run/public/girl?username=${username}`;
         const profilePic = gender === "male" ? boyProfilePic : girlProfilePic;
 
-        // Create new user in the database
+
+
         const newUser = await User.create({
             fullName,
             username,
+            email,
             password: hashedPassword,
             gender,
             profilePic,
         });
 
-        // Generate token and set cookie
+
         generateTokenAndSetCookie(newUser.userId, res);
 
-        // Respond with the new user data
+
         res.status(201).json({
             id: newUser.userId,
             fullName: newUser.fullName,
             username: newUser.username,
+            email: newUser.email,
             profilePic: newUser.profilePic,
         });
     } catch (error) {
