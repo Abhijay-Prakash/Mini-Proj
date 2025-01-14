@@ -1,11 +1,10 @@
-// script.js
 document.addEventListener("DOMContentLoaded", () => {
     const loginBtn = document.getElementById("loginBtn");
     const signupBtn = document.getElementById("signupBtn");
     const loginForm = document.getElementById("loginForm");
     const signupForm = document.getElementById("signupForm");
 
-    // Toggle between login and signup forms
+
     loginBtn.addEventListener("click", () => {
         loginForm.style.display = "block";
         signupForm.style.display = "none";
@@ -20,11 +19,13 @@ document.addEventListener("DOMContentLoaded", () => {
         loginBtn.classList.remove("active");
     });
 
-    // Default view
+
     loginForm.style.display = "block";
     signupForm.style.display = "none";
 
-    // Handle login form submission
+
+
+
     const loginFormElement = document.getElementById("loginFormElement");
     const loginError = document.createElement("div");
     loginError.className = "alert alert-danger mt-3";
@@ -46,8 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: JSON.stringify({ username, password }),
             });
 
+            const data = await response.json(); // Log the response data
             if (response.ok) {
-                const data = await response.json();
                 console.log("Login Success:", data);
                 window.location.href = "../html/home.html";
             } else {
@@ -61,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    // Handle signup form submission
     const signupFormElement = document.querySelector("#signupForm form");
     const signupError = document.createElement("div");
     signupError.className = "alert alert-danger mt-3";
@@ -72,8 +72,26 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
 
         const fullName = document.getElementById("signupName").value;
+        const username = document.getElementById("signupUsername").value;
         const email = document.getElementById("signupEmail").value;
         const password = document.getElementById("signupPassword").value;
+        const confirmPassword = document.getElementById("confirmPassword").value;
+
+
+        const gender = document.querySelector('input[name="gender"]:checked')?.value; // Use optional chaining to handle if none is selected
+
+
+        if (!gender) {
+            signupError.style.display = "block";
+            signupError.textContent = "Please select a gender.";
+            return;
+        }
+
+        if (password !== confirmPassword) {
+            signupError.style.display = "block";
+            signupError.textContent = "Passwords do not match!";
+            return;
+        }
 
         try {
             const response = await fetch("http://localhost:3000/api/auth/signup", {
@@ -81,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ fullName, email, password }),
+                body: JSON.stringify({ fullName, username, email, password, gender }),
             });
 
             if (response.ok) {

@@ -19,7 +19,7 @@ const imageSchema = new mongoose.Schema(
             required: true,
         },
         uploaderUsername: {
-            type: String, // Store the username of the uploader
+            type: String,
             required: true,
         },
         tags: {

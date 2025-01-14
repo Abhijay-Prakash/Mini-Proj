@@ -9,12 +9,12 @@ import { User } from "../models/postgresql/userSchema.js";
 
 export const signup = async (req, res) => {
     try {
-        const { fullName, username, email, password, confirmPassword, gender } = req.body;
+        const { fullName, username, email, password, gender } = req.body;
 
 
-        if (password !== confirmPassword) {
-            return res.status(400).json({ error: "Passwords don't match" });
-        }
+        // if (password !== confirmPassword) {
+        //    return res.status(400).json({ error: "Passwords don't match" });
+        // }
 
 
         const existingUser = await User.findOne({
