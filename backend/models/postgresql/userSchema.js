@@ -1,5 +1,5 @@
 import { Sequelize, DataTypes } from "sequelize";
-import sequelize from "../../db/connectToPostgreSQL.js"; // Your Sequelize instance
+import sequelize from "../../db/connectToPostgreSQL.js";
 
 export const User = sequelize.define("User", {
     userId: {
@@ -36,8 +36,12 @@ export const User = sequelize.define("User", {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    isVerified: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+    },
 }, {
-    tableName: "users", // Ensures Sequelize looks for the correct table
-    timestamps: false, // Adjust this based on your schema
+    tableName: "users",
+    timestamps: false,
 });
 

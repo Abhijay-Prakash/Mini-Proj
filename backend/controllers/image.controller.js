@@ -1,6 +1,6 @@
 import Image from "../models/mongodb/imageModel.js";
 import { User } from "../models/postgresql/userSchema.js";
-import s3UploadV3 from "../utils/s3Service.js";
+import s3UploadV3 from "../services/s3Service.js";
 import dotenv from "dotenv";
 import multer from 'multer';
 
