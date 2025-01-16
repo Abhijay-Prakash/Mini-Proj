@@ -3,7 +3,7 @@ import { Op } from "sequelize";
 
 
 import generateTokenAndSetCookie from "../utils/generateToken.js";
-import { sendEmail } from "../services/mailService.js";
+import { sendEmail } from "./mailService.js";
 import { User } from "../models/postgresql/userSchema.js";
 import { OTP } from "../models/postgresql/otpSchema.js";
 
@@ -40,7 +40,7 @@ export const signup = async (req, res) => {
 
 
 
-        const otpCode = crypto.randomInt(100000, 999999); //  6-digit OTP
+        const otpCode = Math.floor(100000 + Math.random() * 900000); //  6-digit OTP
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);// 10 mins validity 
 
         await OTP.create({
