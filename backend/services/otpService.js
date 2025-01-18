@@ -6,6 +6,10 @@ export const verifyOtp = async (req, res) => {
     try {
         const { email, otpCode } = req.body;
 
+        if (!email || !otpCode) {
+            return res.status(400).json({ error: "Email and OTP Code are required" });
+        }
+
         const otpRecord = await OTP.findOne({ where: { email, otpCode } });
 
         if (!otpRecord || new Date() > otpRecord.expiresAt) {

@@ -10,8 +10,7 @@ import authRoutes from './routes/auth.routes.js';
 import uploadRoutes from './routes/imageRoutes.js';
 import sequelize from './db/connectToPostgreSQL.js';
 import { User } from './models/postgresql/userSchema.js';
-
-
+import { Op } from 'sequelize';
 
 dotenv.config();
 const app = express();
@@ -32,10 +31,12 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
     await connectToMongoDB();
     console.log(`Listening on port ${PORT}`);
+
     (async () => {
         try {
 
             await sequelize.sync({ alter: true });
+
             console.log("All models were synchronized successfully.");
         } catch (error) {
             console.error("Error synchronizing models:", error);

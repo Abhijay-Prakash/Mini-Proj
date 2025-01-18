@@ -16,7 +16,7 @@ const transporter = nodemailer.createTransport({
 export const sendEmail = async (to, subject, text) => {
     try {
         const mailOptions = {
-            from: "your-email@gmail.com", // Replace with your email
+            from: "AI DRIVEN IMAGE MARKETPLACE",
             to,
             subject,
             text,

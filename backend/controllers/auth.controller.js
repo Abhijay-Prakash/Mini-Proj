@@ -3,55 +3,46 @@ import { Op } from "sequelize";
 
 
 import generateTokenAndSetCookie from "../utils/generateToken.js";
-import { sendEmail } from "./mailService.js";
+import { sendEmail } from "../services/mailService.js";
 import { User } from "../models/postgresql/userSchema.js";
 import { OTP } from "../models/postgresql/otpSchema.js";
 
-
 export const signup = async (req, res) => {
     try {
+        console.log("Request body:", req.body);
+
         const { fullName, username, email, password, gender } = req.body;
 
-
-        // if (password !== confirmPassword) {
-        //    return res.status(400).json({ error: "Passwords don't match" });
-        // }
-
-
-        const existingUser = await User.findOne({
-            where: {
-                [Op.or]: [{ username }, { email }],
-            },
-        });
-        if (existingUser) {
-            return res.status(400).json({
-                error: existingUser.username === username
-                    ? "Username already exists"
-                    : "Email already exists",
-            });
+        if (!fullName || !username || !email || !password || !gender) {
+            return res.status(400).json({ error: "All fields are required." });
         }
 
+        const existingUser = await User.findOne({
+            where: { username },
+        });
+
+        if (existingUser) {
+            return res.status(400).json({ error: "Username already exists" });
+        }
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
+
         const boyProfilePic = `https://avatar.iran.liara.run/public/boy?username=${username}`;
         const girlProfilePic = `https://avatar.iran.liara.run/public/girl?username=${username}`;
         const profilePic = gender === "male" ? boyProfilePic : girlProfilePic;
 
-
-
-        const otpCode = Math.floor(100000 + Math.random() * 900000); //  6-digit OTP
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);// 10 mins validity 
+        const otpCode = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins validity
 
         await OTP.create({
             email,
             otpCode,
             expiresAt: otpExpiry,
         });
+
         const emailText = `Your verification code is: ${otpCode}. It will expire in 10 minutes.`;
         await sendEmail(email, "Email Verification Code", emailText);
-
-
 
         const newUser = await User.create({
             fullName,
@@ -64,18 +55,21 @@ export const signup = async (req, res) => {
         });
 
 
-
-
-
         res.status(200).json({
             message: "Signup successful. Verify your email to activate your account.",
             userId: newUser.userId,
         });
     } catch (error) {
-        console.log("Error in signup controller", error.message);
+        console.log("Error in signup controller:", error.message);
         res.status(500).json({ error: "Internal Server Error" });
+        if (error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError") {
+            console.error("Validation Errors:", error.errors.map(err => err.message));
+        }
+
+        throw error;
     }
 };
+
 
 
 

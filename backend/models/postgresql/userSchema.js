@@ -18,8 +18,8 @@ export const User = sequelize.define("User", {
     },
     email: {
         type: DataTypes.STRING,
-        allowNull: true,
-        unique: true,
+        allowNull: false,
+        unique: false,
         validate: {
             isEmail: true,
         },
