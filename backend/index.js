@@ -30,7 +30,7 @@ app.use("/api/upload", uploadRoutes);
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
     await connectToMongoDB();
-    console.log(`Listening on port ${PORT}`);
+    console.log(`Listening on PORT ${PORT}`);
 
     (async () => {
         try {
