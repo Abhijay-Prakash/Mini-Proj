@@ -3,6 +3,7 @@ import { User } from "../models/postgresql/userSchema.js";
 import s3UploadV3 from "../services/s3Service.js";
 import dotenv from "dotenv";
 import multer from 'multer';
+import { sendEmail } from "../services/mailService.js";
 
 
 // Load environment variables
@@ -80,4 +81,24 @@ export const getImages = async (req, res) => {
         console.error("Error:", err);
         res.status(500).json({ success: false, error: "Internal Server Error" });
     }
+};
+
+export const DownloadImages = async (req, res) => {
+    try {
+
+        const { imageId } = req.body;
+
+        const image = await Image.findById(imageId);
+        if (!image) return res.status(404).json({ message: "Image not found" });
+
+
+        await sendEmail(req.user.email, "Your Image Download Link", `Download: ${image.imageUrl}`);
+
+        res.json({ message: "Download link sent to your email" });
+    } catch (error) {
+        console.error("Error in /download-image route:", error);
+        return res.status(500).json({ message: "Server error" });
+    }
+
+
 };

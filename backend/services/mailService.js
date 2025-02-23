@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const transporter = nodemailer.createTransport({
-    service: "gmail", // Replace with your email provider
+    service: "gmail",
     auth: {
         user: process.env.EMAIL_ID,
         pass: process.env.EMAIL_PASS,
@@ -16,12 +16,16 @@ const transporter = nodemailer.createTransport({
 export const sendEmail = async (to, subject, text) => {
     try {
         const mailOptions = {
-            from: "AI DRIVEN IMAGE MARKETPLACE",
+            from: process.env.EMAIL_ID,
             to,
             subject,
             text,
         };
 
+
+        console.log("Sending email to:", to);
+        console.log("Email Subject:", subject);
+        console.log("Email Content:", text);
         await transporter.sendMail(mailOptions);
         console.log(`Email sent to ${to}`);
     } catch (error) {

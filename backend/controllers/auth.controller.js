@@ -7,6 +7,7 @@ import { sendEmail } from "../services/mailService.js";
 import { User } from "../models/postgresql/userSchema.js";
 import { OTP } from "../models/postgresql/otpSchema.js";
 
+
 export const signup = async (req, res) => {
     try {
         console.log("Request body:", req.body);
@@ -76,17 +77,11 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
-
-
-
         const user = await User.findOne({ where: { username } });
-
-
 
         if (!user) {
             return res.status(400).json({ error: "Invalid username or password" });
         }
-
 
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
@@ -99,7 +94,7 @@ export const login = async (req, res) => {
 
             const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // OTP expires in 10 minutes
 
-            // Save OTP in database
+
             await OTP.create({
                 email: user.email,
                 otpCode,
@@ -115,9 +110,7 @@ export const login = async (req, res) => {
         }
 
 
-
         generateTokenAndSetCookie(user.userId, res);
-
 
         res.status(200).json({
             id: user.userId,
