@@ -4,9 +4,6 @@ import s3UploadV3 from "../services/s3Service.js";
 import dotenv from "dotenv";
 import multer from 'multer';
 import { sendEmail } from "../services/mailService.js";
-
-
-// Load environment variables
 dotenv.config();
 
 
@@ -15,7 +12,7 @@ export const postImages = async (req, res) => {
         const { imageTitle, description } = req.body;
         const userId = req.user.userId;
 
-        // Validate required fields
+
         if (!imageTitle || !description || !req.files || !req.files.image) {
             return res.status(400).json({
                 success: false,
@@ -27,7 +24,6 @@ export const postImages = async (req, res) => {
         if (!user) {
             return res.status(404).json({ success: false, error: "User not found" });
         }
-        // Extract image buffer and name
         const imageFile = req.files.image[0];
         const imageBuffer = imageFile.buffer;
         const imageName = imageFile.originalname;
@@ -35,7 +31,7 @@ export const postImages = async (req, res) => {
         // Upload to S3
         const { objectUrl: imageUrl } = await s3UploadV3(imageBuffer, imageName);
 
-        // Save image metadata to the database
+
         const newImage = new Image({
             imageTitle,
             description,
@@ -46,7 +42,7 @@ export const postImages = async (req, res) => {
 
         const savedImage = await newImage.save();
 
-        // Respond with success
+
         res.status(201).json({
             success: true,
             message: "Image uploaded successfully",
@@ -83,7 +79,7 @@ export const getImages = async (req, res) => {
     }
 };
 
-export const DownloadImages = async (req, res) => {
+export const downloadImages = async (req, res) => {
     try {
 
         const { imageId } = req.body;
