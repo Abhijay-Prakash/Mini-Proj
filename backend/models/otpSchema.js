@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import sequelize from "../../db/connectToPostgreSQL.js";
+import sequelize from "../db/connectToPostgreSQL.js";
 
 
 export const OTP = sequelize.define("OTP", {

@@ -1,8 +1,7 @@
-import Image from "../models/mongodb/imageModel.js";
-import { User } from "../models/postgresql/userSchema.js";
+import { Image } from "../models/imageModel.js"; 
+import { User } from "../models/userSchema.js";
 import s3UploadV3 from "../services/s3Service.js";
 import dotenv from "dotenv";
-import multer from 'multer';
 import { sendEmail } from "../services/mailService.js";
 dotenv.config();
 
@@ -12,42 +11,42 @@ export const postImages = async (req, res) => {
         const { imageTitle, description } = req.body;
         const userId = req.user.userId;
 
-
-        if (!imageTitle || !description || !req.files || !req.files.image) {
+        if (!imageTitle || !description || !req.files || !req.files.image || req.files.image.length === 0) {
             return res.status(400).json({
                 success: false,
                 error: "Required fields (imageTitle, description, image) are missing",
             });
         }
 
+       
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ success: false, error: "User not found" });
         }
+
+      
         const imageFile = req.files.image[0];
         const imageBuffer = imageFile.buffer;
         const imageName = imageFile.originalname;
 
-        // Upload to S3
+    
         const { objectUrl: imageUrl } = await s3UploadV3(imageBuffer, imageName);
 
 
-        const newImage = new Image({
+        const savedImage = await Image.create({
             imageTitle,
             description,
             imageUrl,
-            uploaderId: user.userId,
+            uploaderId: user.userId, 
             uploaderUsername: user.username,
         });
-
-        const savedImage = await newImage.save();
-
 
         res.status(201).json({
             success: true,
             message: "Image uploaded successfully",
             data: savedImage,
         });
+
     } catch (err) {
         console.error("Error:", err);
         res.status(500).json({ success: false, error: "Internal Server Error" });
@@ -55,11 +54,9 @@ export const postImages = async (req, res) => {
 };
 
 
-
 export const getImages = async (req, res) => {
     try {
-
-        const images = await Image.find({});
+        const images = await Image.findAll();
 
         if (!images || images.length === 0) {
             return res.status(404).json({
@@ -67,7 +64,6 @@ export const getImages = async (req, res) => {
                 message: "No images found",
             });
         }
-
 
         res.status(200).json({
             success: true,
@@ -79,14 +75,13 @@ export const getImages = async (req, res) => {
     }
 };
 
+
 export const downloadImages = async (req, res) => {
     try {
-
         const { imageId } = req.body;
 
-        const image = await Image.findById(imageId);
+        const image = await Image.findByPk(imageId);
         if (!image) return res.status(404).json({ message: "Image not found" });
-
 
         await sendEmail(req.user.email, "Your Image Download Link", `Download: ${image.imageUrl}`);
 
@@ -95,6 +90,4 @@ export const downloadImages = async (req, res) => {
         console.error("Error in /download-image route:", error);
         return res.status(500).json({ message: "Server error" });
     }
-
-
 };

@@ -1,5 +1,7 @@
 import { Sequelize, DataTypes } from "sequelize";
-import sequelize from "../../db/connectToPostgreSQL.js";
+import sequelize from "../db/connectToPostgreSQL.js";
+import { Image } from "./imageModel.js";
+
 
 export const User = sequelize.define("User", {
     userId: {
@@ -45,3 +47,4 @@ export const User = sequelize.define("User", {
     timestamps: false,
 });
 
+User.hasMany(Image, { foreignKey: "uploaderId" });

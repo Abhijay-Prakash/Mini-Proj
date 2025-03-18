@@ -1,10 +1,10 @@
-import { User } from "../models/postgresql/userSchema.js";
-import { OTP } from "../models/postgresql/otpSchema.js";
-
+import { User } from "../models/userSchema.js";
+import { OTP } from "../models/otpSchema.js";
 
 export const verifyOtp = async (req, res) => {
     try {
         const { email, otpCode } = req.body;
+        console.log(otpCode)
 
         if (!email || !otpCode) {
             return res.status(400).json({ error: "Email and OTP Code are required" });
@@ -28,6 +28,7 @@ export const verifyOtp = async (req, res) => {
         await OTP.destroy({ where: { email } });
 
         res.status(200).json({ message: "Email verified successfully. You can now log in." });
+
     } catch (error) {
         console.error("Error during OTP verification:", error.message);
         res.status(500).json({ error: "Internal Server Error" });

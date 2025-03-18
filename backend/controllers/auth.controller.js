@@ -4,8 +4,8 @@ import { Op } from "sequelize";
 
 import generateTokenAndSetCookie from "../utils/generateToken.js";
 import { sendEmail } from "../services/mailService.js";
-import { User } from "../models/postgresql/userSchema.js";
-import { OTP } from "../models/postgresql/otpSchema.js";
+import { User } from "../models/userSchema.js";
+import { OTP } from "../models/otpSchema.js";
 
 
 export const signup = async (req, res) => {
@@ -72,8 +72,6 @@ export const signup = async (req, res) => {
 };
 
 
-
-
 export const login = async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -113,17 +111,20 @@ export const login = async (req, res) => {
         generateTokenAndSetCookie(user.userId, res);
 
         res.status(200).json({
-            id: user.userId,
-            fullName: user.fullName,
-            username: user.username,
+            user: {
+                id: user.userId,
+                fullName: user.fullName,
+                username: user.username,
+                email: user.email, 
+                profilePic: user.profilePic,
+            },
         });
+        
     } catch (error) {
         console.log("Error in login controller", error.message);
         res.status(500).json({ error: "Internal Server Error" });
     }
 };
-
-
 
 
 export const logout = (req, res) => {
@@ -136,3 +137,11 @@ export const logout = (req, res) => {
     }
 };
 
+import jwt from "jsonwebtoken";
+
+export const getCurrentUser = (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ error: "Not authenticated" });
+    }
+    res.json({ user: req.user });
+};
