@@ -8,6 +8,18 @@ import { User } from "../models/userSchema.js";
 import { OTP } from "../models/otpSchema.js";
 
 
+const generateAvatar = (username, gender) => {
+    const encodedUsername = encodeURIComponent(username);
+    
+    if (gender === "male") {
+        return `https://api.dicebear.com/7.x/adventurer/svg?seed=${encodedUsername}`;
+    } else if (gender === "female") {
+        return `https://api.dicebear.com/7.x/adventurer-neutral/svg?seed=${encodedUsername}`;
+    } else {
+        return `https://api.dicebear.com/7.x/bottts/svg?seed=${encodedUsername}`;
+    }
+};
+
 export const signup = async (req, res) => {
     try {
         console.log("Request body:", req.body);
@@ -18,23 +30,22 @@ export const signup = async (req, res) => {
             return res.status(400).json({ error: "All fields are required." });
         }
 
-        const existingUser = await User.findOne({
-            where: { username },
-        });
-
+        // Check if the username already exists
+        const existingUser = await User.findOne({ where: { username } });
         if (existingUser) {
             return res.status(400).json({ error: "Username already exists" });
         }
 
+        // Hash the password
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        const boyProfilePic = `https://avatar.iran.liara.run/public/boy?username=${username}`;
-        const girlProfilePic = `https://avatar.iran.liara.run/public/girl?username=${username}`;
-        const profilePic = gender === "male" ? boyProfilePic : girlProfilePic;
+        // Generate profile picture based on gender
+        const profilePic = generateAvatar(username, gender);
 
-        const otpCode = Math.floor(100000 + Math.random() * 900000); // 6-digit OTP
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins validity
+        // Generate OTP
+        const otpCode = Math.floor(100000 + Math.random() * 900000);
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 mins
 
         await OTP.create({
             email,
@@ -42,9 +53,11 @@ export const signup = async (req, res) => {
             expiresAt: otpExpiry,
         });
 
+        // Send OTP via email
         const emailText = `Your verification code is: ${otpCode}. It will expire in 10 minutes.`;
         await sendEmail(email, "Email Verification Code", emailText);
 
+        // Create the user
         const newUser = await User.create({
             fullName,
             username,
@@ -55,19 +68,19 @@ export const signup = async (req, res) => {
             isVerified: false,
         });
 
-
         res.status(200).json({
             message: "Signup successful. Verify your email to activate your account.",
             userId: newUser.userId,
         });
     } catch (error) {
-        console.log("Error in signup controller:", error.message);
-        res.status(500).json({ error: "Internal Server Error" });
+        console.error("Error in signup controller:", error.message);
+        
         if (error.name === "SequelizeValidationError" || error.name === "SequelizeUniqueConstraintError") {
             console.error("Validation Errors:", error.errors.map(err => err.message));
+            return res.status(400).json({ error: "Validation error, check inputs" });
         }
 
-        throw error;
+        res.status(500).json({ error: "Internal Server Error" });
     }
 };
 

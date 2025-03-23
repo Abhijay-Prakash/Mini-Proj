@@ -1,9 +1,15 @@
 import { Image } from "../models/imageModel.js"; 
 import { User } from "../models/userSchema.js";
 import s3UploadV3 from "../services/s3Service.js";
-import dotenv from "dotenv";
+
+import AWS from "aws-sdk";
 import { sendEmail } from "../services/mailService.js";
+
+import dotenv from "dotenv";
 dotenv.config();
+
+
+
 
 
 export const postImages = async (req, res) => {
