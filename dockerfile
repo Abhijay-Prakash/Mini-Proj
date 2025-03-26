@@ -1,20 +1,20 @@
-# Use official Node.js image
+# Use a base image
 FROM node:18
 
 # Set working directory
 WORKDIR /app
 
-# Copy package files first (Leverage Docker caching)
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy the entire project
+# Copy the rest of the app
 COPY . .
 
-# Expose the port
+# Expose port
 EXPOSE 3000
 
-# Start the app
+# Start the application
 CMD ["npm", "start"]
