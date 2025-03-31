@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: my-app
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: your-aws-rds-endpoint  # Use AWS RDS endpoint
+      DB_USER: your_db_user
+      DB_PASSWORD: your_db_password
+      DB_NAME: your_db_name
+      DB_PORT: 5432
+    restart: always
