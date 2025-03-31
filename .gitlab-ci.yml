@@ -4,10 +4,8 @@ stages:
 
 variables:
   IMAGE_NAME: "registry.gitlab.com/yourusername/yourproject"
-  DOCKER_DRIVER: overlay2
 
 before_script:
-  - docker info
   - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
 
 build:
