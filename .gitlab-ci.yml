@@ -10,18 +10,17 @@ stages:
 
 variables:
   IMAGE_NAME: registry.gitlab.com/yourusername/yourproject
-  DB_HOST: your-aws-rds-endpoint
-  DB_USER: your_db_user
-  DB_PASSWORD: your_db_password
-  DB_NAME: your_db_name
-  DB_PORT: 5432
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_DRIVER: overlay2
 
 before_script:
-  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+  - apk add --no-cache docker-cli
+  - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" "$CI_REGISTRY"
 
 test:
   stage: test
   image: node:18
+  before_script: []
   script:
     - npm install
     - npm test
@@ -29,6 +28,7 @@ test:
 build:
   stage: build
   script:
+    - cp .env.example .env # Ensure .env exists
     - docker build -t $IMAGE_NAME:$CI_COMMIT_REF_NAME .
     - docker push $IMAGE_NAME:$CI_COMMIT_REF_NAME
 
@@ -37,6 +37,8 @@ deploy:
   only:
     - main
   script:
-    - docker-compose down
-    - docker-compose pull
-    - docker-compose up -d --build
+    - apk add --no-cache docker-cli docker-compose
+    - cp .env.example .env # Ensure .env exists for Docker Compose
+    - docker-compose --env-file .env down
+    - docker-compose --env-file .env pull
+    - docker-compose --env-file .env up -d --build
