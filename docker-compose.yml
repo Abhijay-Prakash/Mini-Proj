@@ -7,9 +7,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DB_HOST: your-aws-rds-endpoint  # Use AWS RDS endpoint
-      DB_USER: your_db_user
-      DB_PASSWORD: your_db_password
-      DB_NAME: your_db_name
-      DB_PORT: 5432
+      DB_HOST: ${PG_HOST}
+      DB_USER: ${PG_USER}
+      DB_PASSWORD: ${PG_PASSWORD}
+      DB_NAME: ${PG_DATABASE}
+      DB_PORT: ${PG_PORT}
+    volumes:
+      - ./.env:/app/.env # Make sure the .env file is available inside the container
     restart: always
