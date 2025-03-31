@@ -5,21 +5,30 @@ stages:
 variables:
   IMAGE_NAME: "registry.gitlab.com/yourusername/yourproject"
 
-before_script:
-  - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
-
+# Build stage
 build:
   stage: build
   image: docker:latest
   services:
     - docker:dind
   script:
+    - echo "Building Docker image..."
+    # Build the Docker image and tag it with the commit reference name
     - docker build -t $IMAGE_NAME:$CI_COMMIT_REF_NAME .
+    # Optionally, also tag the image as 'latest' (if desired)
+    - docker tag $IMAGE_NAME:$CI_COMMIT_REF_NAME $IMAGE_NAME:latest
+    # List the Docker images to confirm the image is built and tagged
+    - docker images
 
+# Push stage
 push:
   stage: push
   image: docker:latest
   services:
     - docker:dind
   script:
+    - echo "Pushing Docker image to GitLab registry..."
+    # Push the image with the commit reference name to the registry
     - docker push $IMAGE_NAME:$CI_COMMIT_REF_NAME
+    # Optionally, push the image tagged as 'latest'
+    - docker push $IMAGE_NAME:latest
